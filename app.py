@@ -1,8 +1,8 @@
 """
-Smart College Assistant - Streamlit Web Application
-An AI-Powered Chatbot for Academic Document Retrieval (RAG-Based)
-University of Mumbai | Atharva College of Engineering, Malad
-Mini Project 1A (2020 'NEP' Scheme) - SE Sem-III (Electronics & Computer Science)
+Smart College Assistant - Streamlit Application
+A Real Conversational Chatbot for Academic Document Retrieval (RAG-Based)
+Atharva College of Engineering, Malad &bull; University of Mumbai
+Mini Project 1A (2020 'NEP' Scheme) &bull; SE Sem-III (Electronics & Computer Science)
 
 Authors:
 1. Atharva Kanade
@@ -29,64 +29,186 @@ from llm_client import generate_rag_response
 
 # Page Configuration
 st.set_page_config(
-    page_title="Smart College Assistant (RAG)",
+    page_title="Atharva College Assistant",
     page_icon="🎓",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom Styling
+# Dark Navy / Charcoal Real Chatbot Styling
 st.markdown("""
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 <style>
-    .main-header {
-        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-        padding: 22px;
-        border-radius: 12px;
-        color: white;
+    /* Dark Navy / Charcoal Theme */
+    .stApp {
+        background-color: #0b132b !important;
+        color: #f8fafc !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+
+    /* Sidebar - Deep Charcoal Navy */
+    section[data-testid="stSidebar"] {
+        background-color: #070c1b !important;
+        border-right: 1px solid #16244d !important;
+    }
+    section[data-testid="stSidebar"] * {
+        color: #cbd5e1 !important;
+    }
+    section[data-testid="stSidebar"] h1, 
+    section[data-testid="stSidebar"] h2, 
+    section[data-testid="stSidebar"] h3 {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+    }
+
+    /* Top Navigation Header */
+    .chat-header-bar {
+        background: #0e1733;
+        border: 1px solid #1f346b;
+        border-radius: 14px;
+        padding: 16px 22px;
         margin-bottom: 20px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 4px 12px rgba(7, 12, 27, 0.4);
     }
-    .main-header h1 {
-        color: white !important;
-        font-size: 26px;
-        margin: 0;
+    .chat-header-title {
+        font-size: 17px;
         font-weight: 700;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
     }
-    .main-header p {
-        color: #e0e7ff;
-        font-size: 13.5px;
-        margin: 5px 0 0 0;
+    .chat-header-subtitle {
+        font-size: 12px;
+        color: #94a3b8;
+        margin-top: 2px;
     }
-    .citation-card {
-        background-color: #f8fafc;
-        border-left: 4px solid #3b82f6;
-        padding: 10px 14px;
-        border-radius: 4px;
-        margin-top: 10px;
+
+    /* Real Chatbot Message Bubbles */
+    div[data-testid="stChatMessage"] {
+        background-color: #111c3d !important;
+        border: 1px solid #1f346b !important;
+        border-radius: 16px !important;
+        padding: 16px 20px !important;
+        box-shadow: 0 2px 8px rgba(7, 12, 27, 0.2) !important;
+        color: #f1f5f9 !important;
+        margin-bottom: 14px !important;
+    }
+    div[data-testid="stChatMessage"] p, 
+    div[data-testid="stChatMessage"] span, 
+    div[data-testid="stChatMessage"] div {
+        color: #f1f5f9 !important;
+        font-size: 13.5px !important;
+        line-height: 1.6 !important;
+    }
+
+    /* User messages distinguished with rich blue tint */
+    div[data-testid="stChatMessage"]:has(div[data-testid="chatAvatarIcon-user"]) {
+        background-color: #16244d !important;
+        border-color: #2563eb !important;
+    }
+
+    /* Citation Tags */
+    .source-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background-color: #0b132b;
+        border: 1px solid #2a468f;
+        border-radius: 8px;
+        padding: 4px 10px;
+        font-size: 11.5px;
+        font-family: 'JetBrains Mono', monospace;
+        color: #93c5fd;
+        margin-right: 6px;
+        margin-top: 4px;
+    }
+
+    /* Out of scope rejection pill */
+    .rejection-pill {
+        background-color: #2a1215;
+        border: 1px solid #881337;
+        border-left: 4px solid #f43f5e;
+        padding: 12px 16px;
+        border-radius: 8px;
+        color: #fda4af;
         font-size: 13px;
     }
-    .badge-pill {
-        background-color: #dbeafe;
-        color: #1e40af;
-        padding: 2px 8px;
-        border-radius: 9999px;
-        font-size: 11px;
-        font-weight: 600;
-        display: inline-block;
+
+    /* Real Chatbot Quick Prompt Pills */
+    div.stButton > button {
+        background-color: #111c3d !important;
+        border: 1px solid #1f346b !important;
+        color: #cbd5e1 !important;
+        border-radius: 12px !important;
+        font-size: 12px !important;
+        font-weight: 500 !important;
+        padding: 8px 14px !important;
+        text-align: left !important;
+        transition: all 0.2s ease !important;
     }
-    .not-found-card {
-        background-color: #fef2f2;
-        border-left: 4px solid #ef4444;
-        padding: 12px;
-        border-radius: 4px;
-        color: #991b1b;
-        font-weight: 500;
+    div.stButton > button:hover {
+        background-color: #16244d !important;
+        border-color: #3b82f6 !important;
+        color: #ffffff !important;
+    }
+
+    /* Chat Input Bar Override */
+    div[data-testid="stChatInput"] {
+        border-radius: 16px !important;
+    }
+    div[data-testid="stChatInput"] textarea {
+        background-color: #111c3d !important;
+        border: 1px solid #1f346b !important;
+        color: #ffffff !important;
+        font-size: 13.5px !important;
+        border-radius: 14px !important;
+    }
+    div[data-testid="stChatInput"] textarea:focus {
+        border-color: #3b82f6 !important;
+    }
+
+    /* Tabs Styling */
+    button[data-baseweb="tab"] {
+        color: #94a3b8 !important;
+        font-weight: 500 !important;
+        font-size: 13px !important;
+    }
+    button[data-baseweb="tab"][aria-selected="true"] {
+        color: #3b82f6 !important;
+        border-bottom-color: #3b82f6 !important;
+    }
+
+    /* Metric Cards */
+    div[data-testid="stMetric"] {
+        background-color: #111c3d !important;
+        border: 1px solid #1f346b !important;
+        border-radius: 12px !important;
+        padding: 12px !important;
+    }
+    div[data-testid="stMetricValue"] {
+        color: #60a5fa !important;
+        font-size: 20px !important;
+        font-weight: 700 !important;
+    }
+    div[data-testid="stMetricLabel"] {
+        color: #94a3b8 !important;
+        font-size: 11px !important;
+        text-transform: uppercase !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # Cache Pipeline Instance
-@st.cache_resource(show_spinner="Initializing ChromaDB & SentenceTransformer Model...")
+@st.cache_resource(show_spinner="Connecting to Atharva Knowledge Vault & Embeddings...")
 def get_pipeline():
     return CollegeRAGPipeline()
 
@@ -98,18 +220,32 @@ if "chat_history" not in st.session_state:
 if "eval_results" not in st.session_state:
     st.session_state.eval_results = None
 
-# Sidebar Controls
+# ==========================================
+# SIDEBAR: LIKE CHATGPT / CLAUDE DRAWER
+# ==========================================
 with st.sidebar:
-    st.image("https://img.icons8.com/fluency/96/university.png", width=64)
-    st.title("Settings & Admin")
-    st.caption("Smart College Assistant v1.0")
-    
+    st.markdown("""
+    <div style="display: flex; align-items: center; gap: 10px; padding-bottom: 14px; border-bottom: 1px solid #1f346b; margin-bottom: 16px;">
+        <div style="width: 36px; height: 36px; background: #2563eb; color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;">
+            A
+        </div>
+        <div>
+            <div style="font-weight: 700; font-size: 13px; color: #ffffff;">Atharva Assistant</div>
+            <div style="font-size: 11px; color: #94a3b8;">Academic RAG Desk</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    if st.button("➕ New Conversation", use_container_width=True):
+        st.session_state.chat_history = []
+        st.rerun()
+
     st.markdown("---")
-    st.subheader("🤖 LLM Backend")
+    st.subheader("Model Configuration")
     provider = st.selectbox(
-        "Select LLM Provider",
+        "LLM Provider",
         ["Offline Extractor (Built-in Demo)", "Google Gemini", "Groq", "Ollama (Local)", "OpenAI"],
-        help="Use 'Offline Extractor' for guaranteed offline demos without needing any API key!"
+        help="Use 'Offline Extractor' for guaranteed offline demos without requiring an external API key."
     )
 
     api_key = ""
@@ -118,117 +254,150 @@ with st.sidebar:
 
     if provider == "Google Gemini":
         api_key = st.text_input("Gemini API Key", type="password", value=os.environ.get("GEMINI_API_KEY", ""))
-        model_name = st.selectbox("Gemini Model", ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro"])
+        model_name = st.selectbox("Model", ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro"])
     elif provider == "Groq":
         api_key = st.text_input("Groq API Key", type="password", value=os.environ.get("GROQ_API_KEY", ""))
-        model_name = st.selectbox("Groq Model", ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768"])
+        model_name = st.selectbox("Model", ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"])
     elif provider == "OpenAI":
         api_key = st.text_input("OpenAI API Key", type="password", value=os.environ.get("OPENAI_API_KEY", ""))
-        model_name = st.selectbox("OpenAI Model", ["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo"])
+        model_name = st.selectbox("Model", ["gpt-4o-mini", "gpt-4o"])
     elif provider == "Ollama (Local)":
-        ollama_url = st.text_input("Ollama Server URL", value="http://localhost:11434")
-        model_name = st.text_input("Ollama Model Name", value="llama3")
+        ollama_url = st.text_input("Ollama Endpoint", value="http://localhost:11434")
+        model_name = st.text_input("Model Name", value="llama3")
 
     st.markdown("---")
-    st.subheader("⚙️ RAG Hyperparameters")
-    top_k = st.slider("Top-K Chunks (Context Window)", min_value=1, max_value=8, value=config.DEFAULT_TOP_K, help="Number of nearest chunks passed as context")
-    threshold = st.slider("Cosine Similarity Threshold", min_value=0.10, max_value=0.80, value=config.DEFAULT_SCORE_THRESHOLD, step=0.05, help="Rejects chunks below this similarity to avoid guessing")
-    temperature = st.slider("LLM Temperature", min_value=0.0, max_value=0.7, value=config.DEFAULT_LLM_TEMPERATURE, step=0.05, help="Lower values keep answers strictly factual")
+    st.subheader("Retrieval Tuning")
+    top_k = st.slider("Top-K Chunks", min_value=1, max_value=8, value=config.DEFAULT_TOP_K)
+    threshold = st.slider("Similarity Threshold", min_value=0.10, max_value=0.80, value=config.DEFAULT_SCORE_THRESHOLD, step=0.05)
+    temperature = st.slider("Temperature", min_value=0.0, max_value=0.7, value=config.DEFAULT_LLM_TEMPERATURE, step=0.05)
 
     st.markdown("---")
-    st.subheader("📊 Knowledge Base Status")
+    st.subheader("Knowledge Repository")
     docs_summary = pipeline.get_indexed_documents()
     total_docs = len(docs_summary)
     total_chunks = pipeline.collection.count()
 
     col1, col2 = st.columns(2)
-    col1.metric("Indexed Docs", total_docs)
-    col2.metric("Total Chunks", total_chunks)
+    col1.metric("Circulars", total_docs)
+    col2.metric("Chunks", total_chunks)
 
-    if st.button("📥 Index Sample Documents", use_container_width=True, help="Load all 5 official sample documents from the project report"):
-        with st.spinner("Extracting, chunking and embedding sample documents..."):
+    if st.button("📥 Index Sample Circulars", use_container_width=True):
+        with st.spinner("Indexing 5 sample college files..."):
             res = pipeline.index_all_sample_documents()
-            st.success(f"Indexed {len(res)} sample college files!")
+            st.success(f"Indexed {len(res)} files successfully!")
             st.rerun()
 
-    if st.button("🗑️ Clear Vector Index", use_container_width=True, help="Wipes all documents from the vector database"):
+    if st.button("🗑️ Clear Stored Knowledge", use_container_width=True):
         pipeline.reset_index()
         st.session_state.chat_history = []
-        st.warning("Vector database reset to empty.")
+        st.warning("Database cleared.")
         st.rerun()
 
-# Header Banner
+    st.markdown("""
+    <div style="font-size: 11px; color: #64748b; padding-top: 14px; border-top: 1px solid #1f346b; margin-top: 20px;">
+        <div><b>Atharva College of Engineering</b></div>
+        <div>Dept. of Electronics & Computer Science</div>
+        <div style="margin-top: 4px;">Guide: <b>Dr. Tejaswini Jadhav</b></div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# Top Bar
 st.markdown("""
-<div class="main-header">
-    <h1>🎓 Smart College Assistant</h1>
-    <p><b>An AI-Powered Chatbot for Academic Document Retrieval (RAG-Based)</b> | Atharva College of Engineering, Malad (University of Mumbai)</p>
-    <p style="font-size: 12px; margin-top: 4px; opacity: 0.9;">
-        <b>Mini Project 1A (2020 NEP Scheme)</b> &bull; Electronics & Computer Science (SE Sem-III) &bull; 
-        Guide: <b>Dr. Tejaswini Jadhav</b> &bull; Students: Atharva Kanade, Fatima Siddiqui, Prasad Kalaskar, Zennerah Shaikh
-    </p>
+<div class="chat-header-bar">
+    <div>
+        <h1 class="chat-header-title">
+            <span>Smart College Assistant</span>
+            <span style="font-size: 10.5px; font-weight: 500; background: #16244d; color: #60a5fa; border: 1px solid #1f346b; padding: 2px 8px; border-radius: 6px; font-family: 'JetBrains Mono', monospace;">
+                RAG &bull; MiniLM-L6
+            </span>
+        </h1>
+        <div class="chat-header-subtitle">
+            Atharva College of Engineering, Malad &bull; Affiliated to University of Mumbai (AY 2025–26)
+        </div>
+    </div>
+    <div style="font-size: 11px; color: #94a3b8; text-align: right;" class="hidden sm:block">
+        <div><b>Mini Project 1A (NEP)</b></div>
+        <div style="color: #64748b;">SE Sem-III (ECS)</div>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
 # Main Navigation Tabs
 tab_chat, tab_admin, tab_eval, tab_info = st.tabs([
-    "💬 Chat Assistant",
-    "📂 Document Management (Admin)",
-    "🧪 Test & Evaluation Suite (Page 28)",
-    "📖 System Architecture & Viva Guide"
+    "💬 Chat",
+    "📂 Document Vault",
+    "🧪 Verification Benchmark",
+    "📖 System Architecture"
 ])
 
 # ==========================================
-# TAB 1: CHAT ASSISTANT
+# TAB 1: REAL CHATBOT INTERFACE
 # ==========================================
 with tab_chat:
-    st.markdown("#### Ask Any Academic Query")
-    st.caption("Ask questions about exam schedules, fees, attendance criteria, syllabus modules, scholarships, or academic calendars.")
-
-    # Quick Question Prompts
-    st.markdown("**Quick Test Prompts (Click to ask):**")
-    p_cols = st.columns(3)
-    sample_queries = [
-        "What is the last date for exam form submission?",
-        "What is the minimum attendance required to appear for exams?",
-        "Which subjects are covered in the Semester IV syllabus?",
-        "How can I apply for a scholarship?",
-        "When does the next semester begin?",
-        "What is the capital of France?"
-    ]
+    st.markdown("""
+    <p style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 6px;">
+        Suggested Questions:
+    </p>
+    """, unsafe_allow_html=True)
     
+    # Prompt Pills
+    p_col1, p_col2, p_col3 = st.columns(3)
     clicked_prompt = None
-    for i, sq in enumerate(sample_queries):
-        col_idx = i % 3
-        if p_cols[col_idx].button(f"👉 {sq}", key=f"sq_btn_{i}", use_container_width=True):
-            clicked_prompt = sq
+    
+    if p_col1.button("📅 Exam form last date?", use_container_width=True):
+        clicked_prompt = "What is the last date for exam form submission?"
+    if p_col2.button("📋 Minimum 75% attendance rule?", use_container_width=True):
+        clicked_prompt = "What is the minimum attendance required to appear for exams?"
+    if p_col3.button("📚 Semester IV syllabus courses?", use_container_width=True):
+        clicked_prompt = "Which subjects are covered in the Semester IV syllabus?"
+    if p_col1.button("🎓 MahaDBT scholarship steps?", use_container_width=True):
+        clicked_prompt = "How can I apply for a scholarship?"
+    if p_col2.button("🗓️ Next semester commencement?", use_container_width=True):
+        clicked_prompt = "When does the next semester begin?"
+    if p_col3.button("🚫 Capital of France? (Out-of-scope)", use_container_width=True):
+        clicked_prompt = "What is the capital of France?"
 
-    # Display Chat History
+    st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+
+    # Empty State Greeting if no messages
+    if not st.session_state.chat_history:
+        st.markdown("""
+        <div style="background-color: #111c3d; border: 1px solid #1f346b; border-radius: 14px; padding: 20px; margin: 12px 0 20px 0;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <span style="font-size: 16px;">👋</span>
+                <span style="font-weight: 600; font-size: 14px; color: #ffffff;">How can I help you today?</span>
+            </div>
+            <p style="font-size: 13px; color: #cbd5e1; line-height: 1.6; margin: 0;">
+                Ask any question about examination schedules, term deadlines, attendance rules (Ordinance 6086), curriculum syllabi, or MahaDBT scholarship procedures. Every answer is grounded directly in uploaded college circulars.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # Message Stream
     for msg in st.session_state.chat_history:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
             if msg.get("citations"):
-                with st.expander("📚 Verified Source Citations", expanded=False):
+                with st.expander("📚 Source Citations", expanded=False):
                     for cit in msg["citations"]:
-                        st.markdown(f"- **Document:** `{cit['source']}` &nbsp;|&nbsp; **Page:** `{cit['page']}` &nbsp;|&nbsp; **Similarity Score:** `{cit.get('similarity', 'N/A')}`")
+                        st.markdown(f"- **Document:** `{cit['source']}` &bull; **Page:** `{cit['page']}` &bull; **Similarity:** `{cit.get('similarity', 'N/A')}`")
             if msg.get("chunks"):
                 with st.expander("🔍 Retrieved Context Passages", expanded=False):
                     for idx, c in enumerate(msg["chunks"], 1):
-                        st.markdown(f"**Chunk #{idx}** from `{c['source']}`, Page {c['page']} (Score: {c['similarity']}):")
+                        st.markdown(f"**Chunk #{idx}** from `{c['source']}`, Page {c['page']} (Similarity: {c['similarity']}):")
                         st.info(c["text"])
 
     # Chat Input Box
-    user_query = st.chat_input("Type your question here (e.g. When is the exam form deadline?)...")
+    user_query = st.chat_input("Ask a question about college circulars, rules, or schedules...")
     active_query = clicked_prompt if clicked_prompt else user_query
 
     if active_query:
-        # Append User Message
         st.session_state.chat_history.append({"role": "user", "content": active_query})
         with st.chat_message("user"):
             st.markdown(active_query)
 
-        # Execute Retrieval & Generation
         with st.chat_message("assistant"):
-            with st.spinner("Searching indexed documents and synthesizing answer..."):
+            with st.spinner("Searching official college records..."):
                 hits = pipeline.retrieve(active_query, k=top_k, threshold=threshold)
                 response = generate_rag_response(
                     question=active_query,
@@ -245,8 +414,8 @@ with tab_chat:
 
                 if response.get("status") == "not_found" or not hits:
                     st.markdown(f"""
-                    <div class="not-found-card">
-                        ⚠️ <b>Out of Scope / Not Found</b><br/>
+                    <div class="rejection-pill">
+                        <b>Out of Scope / Not Found in College Documents</b><br/>
                         {config.NOT_FOUND_MESSAGE}
                     </div>
                     """, unsafe_allow_html=True)
@@ -256,7 +425,7 @@ with tab_chat:
                 if citations:
                     with st.expander("📚 Verified Source Citations", expanded=True):
                         for cit in citations:
-                            st.markdown(f"- **Document:** `{cit['source']}` &nbsp;|&nbsp; **Page:** `{cit['page']}` &nbsp;|&nbsp; **Similarity Score:** `{cit.get('similarity', 'N/A')}`")
+                            st.markdown(f"- **Document:** `{cit['source']}` &bull; **Page:** `{cit['page']}` &bull; **Similarity:** `{cit.get('similarity', 'N/A')}`")
                 
                 if hits:
                     with st.expander("🔍 Retrieved Context Passages", expanded=False):
@@ -264,7 +433,6 @@ with tab_chat:
                             st.markdown(f"**Chunk #{idx}** from `{c['source']}`, Page {c['page']} (Cosine Score: {c['similarity']}):")
                             st.info(c["text"])
 
-        # Store in session state
         st.session_state.chat_history.append({
             "role": "assistant",
             "content": answer_text,
@@ -273,11 +441,11 @@ with tab_chat:
         })
 
 # ==========================================
-# TAB 2: DOCUMENT MANAGEMENT (ADMIN)
+# TAB 2: DOCUMENT VAULT
 # ==========================================
 with tab_admin:
-    st.subheader("College Academic Document Ingestion")
-    st.caption("Upload official college circulars, notices, exam timetables, syllabi, or rules in PDF or DOCX format.")
+    st.subheader("Official Circular Ingestion")
+    st.caption("Upload college notices, circulars, or course syllabi in PDF or DOCX format.")
 
     upload_col1, upload_col2 = st.columns([2, 1])
 
@@ -285,19 +453,17 @@ with tab_admin:
         uploaded_files = st.file_uploader(
             "Upload Documents (PDF or DOCX)",
             type=["pdf", "docx"],
-            accept_multiple_files=True,
-            help="Files are split into chunks with page numbers and stored in local ChromaDB."
+            accept_multiple_files=True
         )
 
         if uploaded_files:
-            if st.button("⚡ Index Uploaded Documents", type="primary"):
+            if st.button("⚡ Process & Index Uploaded Files", type="primary"):
                 progress = st.progress(0)
                 status_text = st.empty()
                 indexed_count = 0
                 
                 for i, file_obj in enumerate(uploaded_files):
-                    status_text.text(f"Processing '{file_obj.name}'...")
-                    # Save local copy to upload directory
+                    status_text.text(f"Extracting & chunking '{file_obj.name}'...")
                     save_path = os.path.join(config.UPLOAD_DIR, file_obj.name)
                     with open(save_path, "wb") as f:
                         f.write(file_obj.getbuffer())
@@ -306,32 +472,32 @@ with tab_admin:
                     indexed_count += chunks_added
                     progress.progress((i + 1) / len(uploaded_files))
                 
-                status_text.text("Indexing completed!")
-                st.success(f"Successfully processed {len(uploaded_files)} documents into {indexed_count} vector chunks!")
+                status_text.text("Ingestion completed.")
+                st.success(f"Indexed {len(uploaded_files)} files into {indexed_count} vector chunks.")
                 st.rerun()
 
     with upload_col2:
-        st.markdown("**Indexing Specifications:**")
-        st.write(f"- **Chunk Size:** `{config.DEFAULT_CHUNK_SIZE}` characters")
-        st.write(f"- **Chunk Overlap:** `{config.DEFAULT_CHUNK_OVERLAP}` characters")
-        st.write(f"- **Embedding:** `{config.EMBEDDING_MODEL_NAME}` (384-d)")
-        st.write(f"- **Vector Store:** ChromaDB (`{config.DISTANCE_METRIC}` space)")
+        st.markdown("**System Specifications:**")
+        st.write(f"- Chunk Size: `{config.DEFAULT_CHUNK_SIZE}` characters")
+        st.write(f"- Chunk Overlap: `{config.DEFAULT_CHUNK_OVERLAP}` characters")
+        st.write(f"- Embedding: `{config.EMBEDDING_MODEL_NAME}` (384-d)")
+        st.write(f"- Vector Space: ChromaDB (`{config.DISTANCE_METRIC}` space)")
 
     st.markdown("---")
-    st.subheader("Currently Indexed Documents in ChromaDB")
+    st.subheader("Active Knowledge Base Documents")
     summary_data = pipeline.get_indexed_documents()
 
     if not summary_data:
-        st.info("No documents are currently indexed in ChromaDB. Click 'Index Sample Documents' in the sidebar or upload documents above.")
+        st.info("No documents are currently indexed. Click 'Index Sample Circulars' in the sidebar.")
     else:
         df_docs = pd.DataFrame(summary_data)
         st.dataframe(df_docs, use_container_width=True)
 
-        st.markdown("#### Manage Specific Documents")
+        st.markdown("#### Document Removal")
         del_col1, del_col2 = st.columns([3, 1])
         doc_names = [d["source"] for d in summary_data]
-        selected_to_delete = del_col1.selectbox("Select document to remove", doc_names)
-        if del_col2.button("❌ Delete Document", use_container_width=True):
+        selected_to_delete = del_col1.selectbox("Select document to delete", doc_names)
+        if del_col2.button("❌ Remove Document", use_container_width=True):
             deleted = pipeline.delete_document(selected_to_delete)
             st.success(f"Deleted {deleted} chunks for '{selected_to_delete}'")
             st.rerun()
@@ -340,11 +506,8 @@ with tab_admin:
 # TAB 3: TEST & EVALUATION SUITE
 # ==========================================
 with tab_eval:
-    st.subheader("Standard Evaluation Benchmark (From Report Page 28)")
-    st.markdown("""
-    This automated test runner evaluates the RAG pipeline against the official test suite from 
-    **Page 28 of the submitted project report**, testing date retrieval, policy enforcement, syllabus lookups, procedural steps, and out-of-scope rejection.
-    """)
+    st.subheader("Project Evaluation Benchmark (Report Page 28)")
+    st.caption("Standardized test queries from Table 6.2 testing accuracy and source attribution.")
 
     test_cases = [
         {"id": 1, "question": "What is the last date for exam form submission?", "category": "Date / deadline", "expected_source": "Exam_Circular_2025.pdf", "keywords": ["15 November 2025"]},
@@ -355,7 +518,7 @@ with tab_eval:
         {"id": 6, "question": "What is the capital of France?", "category": "Out of scope (expect 'not found')", "expected_source": None, "keywords": ["I could not find this in the college documents."]}
     ]
 
-    if st.button("🚀 Run Full Evaluation Benchmark (6 Test Cases)", type="primary"):
+    if st.button("🚀 Run Standard Benchmark Test", type="primary"):
         eval_records = []
         progress_bar = st.progress(0)
         
@@ -367,7 +530,6 @@ with tab_eval:
             citations = resp["citations"]
             primary_cit = f"{citations[0]['source']} (p. {citations[0]['page']})" if citations else "None"
             
-            # Verification logic
             is_pass = False
             if tc["expected_source"] is None:
                 if "could not find this" in answer.lower():
@@ -382,14 +544,14 @@ with tab_eval:
                 "Test ID": tc["id"],
                 "Question": tc["question"],
                 "Category": tc["category"],
-                "Top Citation": primary_cit,
-                "Answer Preview": answer[:120] + "...",
+                "Citation": primary_cit,
+                "Answer Excerpt": answer[:120] + "...",
                 "Status": "✅ PASS" if is_pass else "⚠️ REVIEW"
             })
             progress_bar.progress((idx + 1) / len(test_cases))
 
         st.session_state.eval_results = pd.DataFrame(eval_records)
-        st.success("Evaluation Benchmark Run Complete!")
+        st.success("Benchmark completed.")
 
     if st.session_state.eval_results is not None:
         df_res = st.session_state.eval_results
@@ -399,36 +561,36 @@ with tab_eval:
 
         col_m1, col_m2, col_m3 = st.columns(3)
         col_m1.metric("Tests Passed", f"{pass_count}/{total_count}")
-        col_m2.metric("Retrieval Accuracy", f"{accuracy:.1f}%")
+        col_m2.metric("Retrieval Precision", f"{accuracy:.1f}%")
         col_m3.metric("Hallucination Rate", "0.0%")
 
         st.dataframe(df_res, use_container_width=True)
 
 # ==========================================
-# TAB 4: SYSTEM ARCHITECTURE & VIVA GUIDE
+# TAB 4: ARCHITECTURE & VIVA REFERENCE
 # ==========================================
 with tab_info:
-    st.subheader("System Architecture & Viva Presentation Reference")
+    st.subheader("System Architecture & Viva Presentation Notes")
 
     col_a, col_b = st.columns(2)
     with col_a:
-        st.markdown("### 1. Indexing Pipeline (Offline / On Upload)")
+        st.markdown("### A. Indexing Pipeline (Offline)")
         st.markdown("""
         ```
         [College Documents (PDF/DOCX)]
                     ↓
-        [Text Extraction & Cleaning (PyPDF / python-docx)]
+        [Text Extraction (PyPDF / python-docx)]
                     ↓
         [Chunking Module (800 chars, 150 overlap)]
                     ↓
-        [Embedding Model: all-MiniLM-L6-v2 (384-d vectors)]
+        [Sentence-Transformers: all-MiniLM-L6-v2 (384-d)]
                     ↓
-        [ChromaDB Vector Store (Persistent, Cosine Space)]
+        [ChromaDB Persistent Local Store (Cosine Space)]
         ```
         """)
 
     with col_b:
-        st.markdown("### 2. Query Pipeline (Online / Real-Time)")
+        st.markdown("### B. Query Pipeline (Real-Time)")
         st.markdown("""
         ```
         [Student / Staff Query]
@@ -437,45 +599,27 @@ with tab_info:
                     ↓
         [Top-K Nearest Neighbor Cosine Search (ChromaDB)]
                     ↓
-        [Cosine Similarity Threshold Check (>= 0.30)]
-            ├── If below threshold ──> Output: "I could not find this..."
-            └── If above threshold ──> [Prompt Builder (Rules + Context + Query)]
+        [Similarity Threshold Filter (>= 0.30)]
+            ├── Below Threshold ──> Return "I could not find this..."
+            └── Above Threshold ──> [Strict Grounded Prompt Construction]
                                                 ↓
-                                    [LLM Generation (Temp=0.1)]
+                                    [LLM Response Generation]
                                                 ↓
-                                    [Answer with Source Citations]
+                                    [Answer with Document & Page Citations]
         ```
         """)
 
     st.markdown("---")
-    st.markdown("### 🎓 Examiner Viva Q&A Cheat Sheet")
+    st.markdown("### Examination Viva Voce Key Points")
     
-    with st.expander("Q1: Why use RAG instead of Fine-Tuning a model on college documents?"):
+    with st.expander("1. Why use RAG instead of Fine-Tuning a language model?"):
         st.write("""
-        1. **Rapid Updates:** College circulars, dates, and timetables change frequently every semester. RAG updates instantaneously just by uploading a new PDF—no expensive GPU retraining needed.
-        2. **Verifiable Citations:** Fine-tuning bakes knowledge into neural weights where it cannot cite specific document names and page numbers. RAG retrieves the exact chunk, providing transparent citations.
-        3. **Zero Hallucination:** Fine-tuned models still hallucinate dates and rules. In RAG, the prompt strictly binds the LLM to retrieved context and returns 'not found' when out of scope.
-        4. **Cost & Privacy:** RAG runs on an ordinary laptop CPU with an open-source vector store (ChromaDB), preserving document privacy.
+        1. **Instant Updates:** College circulars, dates, and schedules change every semester. In RAG, updating the system requires only uploading the new PDF—no multi-hour GPU retraining.
+        2. **Verifiability:** Fine-tuning bakes facts into neural weights where they cannot cite sources. RAG retrieves the exact passage and cites the document name and page number.
+        3. **Zero Hallucination:** Fine-tuned models still hallucinate dates. In RAG, the prompt strictly restricts the LLM to retrieved context and returns 'not found' when out of scope.
         """)
 
-    with st.expander("Q2: Why is Cosine Similarity used instead of Euclidean (L2) distance?"):
+    with st.expander("2. Why is Cosine Similarity chosen over Euclidean (L2) distance?"):
         st.write("""
-        Cosine similarity measures the **angle** between two embedding vectors ($\cos \theta = \frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\| \|\mathbf{v}\|}$), 
-        capturing semantic direction and thematic meaning regardless of chunk text length. Euclidean distance is sensitive to vector magnitude and text length differences.
+        Cosine similarity measures the angle between vectors, capturing semantic intent regardless of text length. Euclidean distance is sensitive to chunk length variations.
         """)
-
-    with st.expander("Q3: Why is chunk overlap (150 characters) necessary?"):
-        st.write("""
-        Without overlap, important sentences or conditional rules (e.g., 'unless approved by HOD') might be split across two chunk boundaries, breaking semantic meaning.
-        Overlap ensures context is preserved across chunk boundaries so the embedding captures the complete thought.
-        """)
-
-    with st.expander("Q4: How does the system handle questions outside the college knowledge base?"):
-        st.write("""
-        The system applies a **cosine similarity threshold** (default 0.30). If the best retrieved chunk has similarity below this threshold, 
-        the system refuses to guess and immediately replies with the standard statement: 
-        *\"I could not find this in the college documents.\"*
-        """)
-
-    st.markdown("---")
-    st.caption("Smart College Assistant &bull; Atharva College of Engineering &bull; AY 2025-2026")
