@@ -7,3 +7,12 @@ __pycache__/
 venv/
 chroma_store/
 uploaded_documents/
+
+.env
+.env.*
+!.env.example
+__pycache__/
+.venv/
+venv/
+chroma_store/
+uploaded_documents/
